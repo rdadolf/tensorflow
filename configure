@@ -212,6 +212,16 @@ while true; do
   CUDNN_INSTALL_PATH=""
 done
 
+# Configure libcuda soname
+# This version number shouldn't need to be updated unless NVidia breaks ABI
+# compatibility on libcuda (which they haven't yet and stated they don't plan
+# to), but it behaves differently across OS's.
+if [ "$OSNAME" == "Linux" ]; then
+  TF_LIBCUDA_VERSION="1"
+elif [ "$OSNAME" == "Darwin" ]; then
+  TF_LIBCUDA_VERSION=""
+fi
+
 cat > third_party/gpus/cuda/cuda.config <<EOF
 # CUDA_TOOLKIT_PATH refers to the CUDA toolkit.
 CUDA_TOOLKIT_PATH="$CUDA_TOOLKIT_PATH"
@@ -225,6 +235,9 @@ TF_CUDA_VERSION=$TF_CUDA_VERSION
 
 # The Cudnn version that should be used in this build
 TF_CUDNN_VERSION=$TF_CUDNN_VERSION
+
+# The system-dependent version string for libcuda
+TF_LIBCUDA_VERSION=$TF_LIBCUDA_VERSION
 EOF
 
 # Configure the gcc host compiler to use
@@ -242,6 +255,10 @@ perl -pi -e "s,CUDA_VERSION = \"[0-9\.]*\",CUDA_VERSION = \"$TF_CUDA_VERSION\",s
 # Configure the Cudnn version to work with.
 perl -pi -e "s,(GetCudnnVersion.*return )\"[0-9\.]*\",\1\"$TF_CUDNN_VERSION\",s" tensorflow/stream_executor/dso_loader.cc
 perl -pi -e "s,CUDNN_VERSION = \"[0-9\.]*\",CUDNN_VERSION = \"$TF_CUDNN_VERSION\",s" third_party/gpus/cuda/platform.bzl
+
+# Configure the libcuda version to work with.
+perl -pi -e "s,(GetLibcudaVersion.*return )\"[0-9\.]*\",\1\"$TF_LIBCUDA_VERSION\",s" tensorflow/stream_executor/dso_loader.cc
+# (no reference to libcuda in third_party/gpus/cuda/platform.bzl)
 
 
 # Configure the compute capabilities that TensorFlow builds for.

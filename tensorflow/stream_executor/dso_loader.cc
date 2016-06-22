@@ -42,6 +42,7 @@ namespace internal {
 // any modifications of the format, please make sure the script still works.
 string GetCudaVersion() { return ""; }
 string GetCudnnVersion() { return ""; }
+string GetLibcudaVersion() { return ""; }
 
 /* static */ port::Status DsoLoader::GetCublasDsoHandle(void** dso_handle) {
   return GetDsoHandle(FindDsoPath(tensorflow::internal::FormatLibraryFileName("cublas", GetCudaVersion()),
@@ -72,7 +73,7 @@ string GetCudnnVersion() { return ""; }
 }
 
 /* static */ port::Status DsoLoader::GetLibcudaDsoHandle(void** dso_handle) {
-  return GetDsoHandle(FindDsoPath(tensorflow::internal::FormatLibraryFileName("cuda", "1"),
+  return GetDsoHandle(FindDsoPath(tensorflow::internal::FormatLibraryFileName("cuda", GetLibcudaVersion()),
                                   GetCudaDriverLibraryPath()),
                       dso_handle);
 }
